@@ -10,3 +10,4 @@ selenium-debug.log
 npm-debug.log.*
 .vscode
 package-lock.json
+test.js

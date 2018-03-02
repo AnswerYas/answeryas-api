@@ -10,7 +10,10 @@
   "author": "",
   "license": "ISC",
   "dependencies": {
-    "koa": "^2.3.0"
+    "body-parser": "^1.18.2",
+    "express": "^4.16.2",
+    "koa": "^2.3.0",
+    "mongoose": "^5.0.3"
   },
   "devDependencies": {
     "koa-bodyparser": "^4.2.0",
