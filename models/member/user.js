@@ -1,9 +1,12 @@
 const mongoose = require('mongoose')
 const Schema = mongoose.Schema
 
-const RegisterSchema = new Schema({
-  unique_id: {
+const UserSchema = new Schema({
+  id: {
     type: Schema.Types.ObjectId,
+  },
+  unique_id: {
+    type: String,
     required: true
   },
   password: {
@@ -16,4 +19,4 @@ const RegisterSchema = new Schema({
   gender: String,
 })
 
-module.exports = mongoose.model('Register', RegisterSchema)
+module.exports = mongoose.model('User', UserSchema)
