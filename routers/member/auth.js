@@ -1,30 +1,83 @@
 const User = require('../../models/member/user');
 const router = require('express').Router();
 const {ApiError} = require('../../api')
+const bcrypt = require('bcrypt')
+const jwt = require('jsonwebtoken')
+const config  = require('../../config')
+const passport = require('passport')
+require('../../passport.config')(passport)
 
 router.route('/register').post((req, res) => {
-  const {unique_id, password, repassword, mobile, nickname, gender, email} = req.body
+  const {unique_id, password, mobile, nickname, gender, email} = req.body
 
   if(!unique_id) {
-    res.send(new ApiError('unique_id is required', 1001))
+    res.status(400).send(new ApiError(1001, 'unique_id is required'))
     return
   }
 
   if(!password) {
-    res.json(new ApiError('password is required', 1002))
+    res.status(400).send(new ApiError(1002, 'password is required'))
     return
   }
 
-  if(password !== password) {
-    res.json(new ApiError('password does not equal repassword', 1003))
-  }
+  User.findOne({unique_id}, (err, doc) => {
+    if (doc) {
+      res.status(400).send(new ApiError(1004, 'user does exit'))
+      return
+    }
 
-  const user = new User({unique_id, password, mobile, nickname, gender, email})
-  user.save(err => {
-    if (err) res.send(err)
-    console.log(err)
-    res.json({code: 200, message: 'register success'})
+    const user = new User({unique_id, password, mobile, nickname, gender, email})
+    const token = jwt.sign({ id: user._id }, config.secret, {
+      expiresIn: 86400 // expires in 24 hours
+    });
+    user.token = token;
+    user.save(err => {
+      if (err) res.status(500).send(err)
+      res.status(200).json({token})
+    })
   })
 });
+
+router.route('/login').post((req, res) => {
+  const {unique_id, password} = req.body
+  
+  if(!unique_id) {
+    res.status(400).send(new ApiError(1001, 'unique_id is required'))
+    return
+  }
+
+  if(!password) {
+    res.status(400).send(new ApiError(1002, 'password is required'))
+    return
+  }
+
+  User.findOne({unique_id}, function (err, user) {
+    if (err) return res.status(500).send('Error on the server.');
+    if (!user) return res.status(404).send('No user found.');
+    user.comparePassword(password, (err, isMatch) => {
+      console.log(err)
+      if(err) {
+        return res.status(400).json(err)
+      }
+      if (!isMatch) {
+        return res.status(400).send({code: 1003, message: 'password does not match' })
+      }
+      const token = jwt.sign({unique_id}, config.secret, {
+        expiresIn: 86400 // expires in 24 hours
+      });
+      user.token = token
+      user.save(err => {
+        if(err) {
+          return res.status(500).send('Error on the server.')
+        }
+        res.status(200).json({token})
+      })
+    })
+  });
+})
+
+router.route('/profile').get(passport.authenticate('bearer', { session: false }),(req, res, next) => {
+  res.status(200).json({message: 'success'})
+})
 
 module.exports = router

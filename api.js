@@ -1,8 +1,8 @@
 class ApiError extends Error {
-  constructor(message = 'internal:unknown_error', code = 400) {
+  constructor(code = 400, message = 'internal:unknown_error') {
     super();
-    this.message = message;
     this.code = code;
+    this.message = message;
   }
 }
 
