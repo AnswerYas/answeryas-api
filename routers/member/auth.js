@@ -77,7 +77,8 @@ router.route('/login').post((req, res) => {
 })
 
 router.route('/profile').get(passport.authenticate('bearer', { session: false }),(req, res, next) => {
-  res.status(200).json({message: 'success'})
+  const {unique_id, mobile, email, nickname, gender} = req.user
+  res.status(200).json({unique_id, mobile, email, nickname, gender})
 })
 
 module.exports = router
