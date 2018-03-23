@@ -37,5 +37,7 @@ router.get('/', (req, res) => {
 
 app.use('/member', require('./routers/member'))
 
+app.use(router)
+
 app.listen(port);
 console.log('app running on ' + port);
